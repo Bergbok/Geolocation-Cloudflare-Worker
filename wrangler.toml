@@ -1,6 +1,12 @@
 name = 'geolocation'
 main = 'src/index.ts'
 compatibility_date = '2025-07-22'
+preview_urls = false
+workers_dev = false
+routes = [
+	{ pattern = 'geolocation.bergbok.party', custom_domain = true },
+	{ pattern = '*.bergbok.party/geolocation', zone_id = 'a6bbeb41ba496a03dcf7d7fa4580f6f5' }
+]
 
 [observability]
 enabled = true
