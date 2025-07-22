@@ -1,0 +1,20 @@
+{
+	"name": "geolocation-cloudflare-worker",
+	"version": "1.0.0",
+	"private": true,
+	"license": "AGPL-3.0-only",
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"typescript": "^5.5.2",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.7.0"
+	}
+}
