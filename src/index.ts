@@ -1,5 +1,14 @@
 export default {
 	async fetch(request): Promise<Response> {
+		const corsHeaders = {
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Methods': 'GET',
+		}
+
+		if (request.method === 'OPTIONS') {
+			return new Response('ok', { headers: corsHeaders });
+		}
+
 		const cf: IncomingRequestCfPropertiesBase & IncomingRequestCfPropertiesGeographicInformation = request.cf!;
 
 		if (!cf) {
@@ -21,6 +30,6 @@ export default {
 			timezone: cf.timezone
 		};
 
-		return Response.json(locationInfo);
+		return Response.json(locationInfo, { headers: corsHeaders });
 	},
 } satisfies ExportedHandler;
