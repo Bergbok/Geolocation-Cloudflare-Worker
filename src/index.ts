@@ -12,7 +12,7 @@ export default {
 		const cf: IncomingRequestCfPropertiesBase & IncomingRequestCfPropertiesGeographicInformation = request.cf!;
 
 		if (!cf) {
-			return Response.json({ error: 'Response had no Cloudflare info!' }, { status: 400 });
+			return Response.json({ error: 'Response had no Cloudflare info!' }, { status: 400, headers: corsHeaders });
 		}
 
 		const locationInfo = {

@@ -2,57 +2,76 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import worker from '../src/index';
 
 describe('Geolocation Worker', () => {
+	const mockResponse = {
+		city: "Tokyo",
+		colo: "KIX",
+		continent: "AS",
+		country: "JP",
+		isEUCountry: false,
+		latitude: "35.68950",
+		longitude: "139.69171",
+		metroCode: "635",
+		postalCode: "101-8656",
+		region: "Tokyo",
+		regionCode: "13",
+		timezone: "Asia/Tokyo"
+	};
+
 	let mockRequest: Request;
 
 	beforeEach(() => {
 		mockRequest = new Request('https://www.twitch.tv/greatsphynx');
-		Object.defineProperty(mockRequest, 'cf', {
-			value: {
-				city: 'San Francisco',
-				colo: 'SFO',
-				continent: 'NA',
-				country: 'US',
-				isEUCountry: false,
-				latitude: '37.7749',
-				longitude: '-122.4194',
-				metroCode: '807',
-				postalCode: '94107',
-				region: 'California',
-				regionCode: 'CA',
-				timezone: 'America/Los_Angeles'
-			}
+	});
+
+	describe('successful responses', () => {
+		it('should return complete geolocation data with correct status', async () => {
+			Object.defineProperty(mockRequest, 'cf', { value: mockResponse });
+
+			const response = await worker.fetch(mockRequest);
+
+			expect(response.status).toBe(200);
+			const data = await response.json();
+			expect(data).toEqual(mockResponse);
+		});
+
+		it('should include CORS headers in the successful response', async () => {
+			Object.defineProperty(mockRequest, 'cf', { value: mockResponse });
+
+			const response = await worker.fetch(mockRequest);
+
+			expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+			expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
+		});
+
+		it('should handle OPTIONS request correctly', async () => {
+			const optionsRequest = new Request('https://www.twitch.tv/greatsphynx', { method: 'OPTIONS' });
+			const response = await worker.fetch(optionsRequest);
+
+			expect(response.status).toBe(200);
+			expect(await response.text()).toBe('ok');
+			expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+			expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
 		});
 	});
 
-	it('should return geolocation data from CF properties', async () => {
-		const response = await worker.fetch(mockRequest);
-		expect(response.status).toBe(200);
+	describe('error handling', () => {
+		it('should return 400 error when CF data is missing', async () => {
+			Object.defineProperty(mockRequest, 'cf', { value: undefined });
 
-		const data = await response.json();
-		expect(data).toEqual({
-			city: 'San Francisco',
-			colo: 'SFO',
-			continent: 'NA',
-			country: 'US',
-			isEUCountry: false,
-			latitude: '37.7749',
-			longitude: '-122.4194',
-			metroCode: '807',
-			postalCode: '94107',
-			region: 'California',
-			regionCode: 'CA',
-			timezone: 'America/Los_Angeles'
+			const response = await worker.fetch(mockRequest);
+
+			expect(response.status).toBe(400);
+			const errorData = await response.json();
+			expect(errorData).toEqual({ error: 'Response had no Cloudflare info!' });
 		});
-	});
 
-	it('should return an error when CF data is missing', async () => {
-		const requestWithoutCf = new Request('https://www.twitch.tv/greatsphynx');
-		Object.defineProperty(requestWithoutCf, 'cf', { value: undefined });
+		it('should include CORS headers even in error responses', async () => {
+			Object.defineProperty(mockRequest, 'cf', { value: undefined });
 
-		const response = await worker.fetch(requestWithoutCf);
+			const response = await worker.fetch(mockRequest);
 
-		expect(response.status).toBe(400);
-		const errorData = await response.json();
-		expect(errorData).toEqual({ error: 'Response had no Cloudflare info!' });
+			expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+			expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
+		});
 	});
 });
