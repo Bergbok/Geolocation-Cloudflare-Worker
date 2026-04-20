@@ -48,7 +48,7 @@ jobs:
           run: bun install --frozen-lockfile
 
         - name: Deploy
-          uses: cloudflare/wrangler-action@v3.14.1
+          uses: cloudflare/wrangler-action@v3.15.0
           with:
             accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
             apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
